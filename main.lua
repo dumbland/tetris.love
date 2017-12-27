@@ -9,6 +9,9 @@ love.graphics.setDefaultFilter('nearest', 'nearest')
 math.randomseed(os.time())
 
 board = {}
+board.origin = {}
+board.origin.x = 1 + minoSize
+board.origin.y = 0
 board.width = 12
 board.height = 18
 board.grid = {}
@@ -111,8 +114,8 @@ function drawMino(mino, x, y)
 end
 
 function drawTetromino(tetromino)
-	offsetX = 1 + (minoSize / 2) + (tetromino.x * minoSize) - minoSize
-	offsetY = tetromino.y * minoSize + (minoSize / 2)
+	offsetX = board.origin.x + (tetromino.x * minoSize)
+	offsetY = board.origin.y + (tetromino.y * minoSize)
 
 	for _, mino in pairs(tetromino.minos) do
 		drawMino(mino, offsetX, offsetY)
@@ -184,7 +187,7 @@ function love.load()
 	minoSprites[6] = love.graphics.newQuad(8, 8, 8, 8, sprites:getDimensions())    -- z mino
 	minoSprites[7] = love.graphics.newQuad(16, 8, 8, 8, sprites:getDimensions())   -- long mino cap
 	minoSprites[8] = love.graphics.newQuad(24, 8, 8, 8, sprites:getDimensions())   -- long mino body
-  minoSprites[9] = love.graphics.newQuad(0, 16, 8, 8, sprites:getDimensions())   -- wall 1
+    minoSprites[9] = love.graphics.newQuad(0, 16, 8, 8, sprites:getDimensions())   -- wall 1
 	minoSprites[10] = love.graphics.newQuad(8, 16, 8, 8, sprites:getDimensions())  -- wall 2
 	minoSprites[11] = love.graphics.newQuad(16, 16, 8, 8, sprites:getDimensions())  -- wall 3
 
@@ -242,7 +245,29 @@ function love.draw()
 	love.graphics.scale(scale_factor)
 	love.graphics.setColor(255, 255, 255)
 	love.graphics.setBackgroundColor(255, 255, 255)
-	
+
+	-- draw grid
+	love.graphics.setColor(200, 200, 200)
+	local x = board.origin.x
+	while x <= screen_width do
+		love.graphics.setColor(200, 200, 200)
+		love.graphics.line(x, board.origin.y, x, screen_height)
+		love.graphics.setColor(0,0,0)
+		love.graphics.print((x-board.origin.x)/8, x, board.origin.y, 0, 0.2, 0.2, -2, -2)
+		x = x + minoSize
+	end
+
+	local y = board.origin.y
+	while y <= screen_height do
+		love.graphics.setColor(200, 200, 200)
+		love.graphics.line(board.origin.x, y, screen_width, y)
+		love.graphics.setColor(0,0,0)
+		love.graphics.print((y-board.origin.y)/8, board.origin.x, y, 0, 0.2, 0.2, -2, -2)
+		y = y + minoSize
+	end
+
+	love.graphics.setColor(255, 255, 255)
+
 	-- draw walls
 	for i = 0, 5 do
 		love.graphics.draw(sprites, minoSprites[11], 1, i * minoSize*3)
@@ -258,7 +283,6 @@ function love.draw()
 		for x = 1, #board.grid[y] do
 			if board.grid[y][x] ~= '0' then
 				drawMino(board.grid[y][x], 0, 0)
-				print ("drawMino " .. x .. ", " .. y)
 			else 
 				-- print("board.grid[".. y .."][".. x .."] = " .. board.grid[y][x])
 			end
@@ -267,5 +291,7 @@ function love.draw()
 
 	-- draw active piece
 	drawTetromino(activeTetromino)
+
+
 
 end
